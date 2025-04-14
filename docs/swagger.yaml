@@ -1,45 +1,16 @@
 basePath: /
 definitions:
-  system.Response:
+  entity.User:
     properties:
-      message:
-        description: メッセージ（詳細説明）
-        type: string
-      status:
-        description: ステータス（成功、失敗など）
-        type: string
-    type: object
-  user.RequestUserParam:
-    properties:
-      email:
-        description: メールアドレス（必須）
-        type: string
-      name:
-        description: ユーザー名（必須）
-        type: string
-    required:
-    - email
-    - name
-    type: object
-  user.Response:
-    properties:
-      message:
-        description: メッセージ（詳細説明）
-        type: string
-      status:
-        description: ステータス（成功、失敗など）
-        type: string
-    type: object
-  user.ResponseUser:
-    properties:
-      email:
-        description: メールアドレス
+      created_at:
         type: string
       id:
-        description: ユーザーID
+        type: integer
+      password:
         type: string
-      name:
-        description: ユーザー名
+      updated_at:
+        type: string
+      username:
         type: string
     type: object
 host: localhost:8080
@@ -49,21 +20,7 @@ info:
   title: ユーザー管理API
   version: "1.0"
 paths:
-  /v1/health:
-    get:
-      consumes:
-      - application/json
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: 成功時のレスポンス
-          schema:
-            $ref: '#/definitions/system.Response'
-      summary: 死活監視用
-      tags:
-      - healthcheck
-  /v1/users:
+  /auth/users:
     get:
       consumes:
       - application/json
@@ -74,32 +31,38 @@ paths:
           description: ユーザー一覧
           schema:
             items:
-              $ref: '#/definitions/user.ResponseUser'
+              $ref: '#/definitions/entity.User'
             type: array
       summary: ユーザー一覧を取得
       tags:
       - user
+  /auth/users/:
     post:
       consumes:
       - application/json
       parameters:
+      - description: ユーザーID
+        in: path
+        name: id
+        required: true
+        type: integer
       - description: ユーザー情報
         in: body
         name: request
         required: true
         schema:
-          $ref: '#/definitions/user.RequestUserParam'
+          $ref: '#/definitions/entity.User'
       produces:
       - application/json
       responses:
         "200":
           description: 編集成功
           schema:
-            $ref: '#/definitions/user.Response'
-      summary: ユーザー情報を編集
+            $ref: '#/definitions/entity.User'
+      summary: 新規ユーザーを作成
       tags:
       - user
-  /v1/users/{id}:
+  /auth/users/{id}:
     delete:
       consumes:
       - application/json
@@ -115,7 +78,7 @@ paths:
         "200":
           description: 削除成功
           schema:
-            $ref: '#/definitions/user.Response'
+            $ref: '#/definitions/entity.User'
       summary: ユーザー情報を削除
       tags:
       - user
@@ -123,19 +86,103 @@ paths:
       consumes:
       - application/json
       parameters:
+      - description: ユーザー情報
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/entity.User'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 作成されたユーザー情報
+          schema:
+            $ref: '#/definitions/entity.User'
+      summary: ユーザーを取得
+      tags:
+      - user
+    put:
+      consumes:
+      - application/json
+      parameters:
       - description: ユーザーID
         in: path
         name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 削除されたユーザーID
+          schema:
+            type: integer
+      summary: ユーザー情報を編集
+      tags:
+      - user
+  /auth/validate:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Bearer トークン
+        in: header
+        name: Authorization
         required: true
         type: string
       produces:
       - application/json
       responses:
         "200":
-          description: ユーザー詳細
+          description: 認証済みユーザー情報
           schema:
-            $ref: '#/definitions/user.ResponseUser'
-      summary: ユーザーの詳細情報を取得
+            $ref: '#/definitions/entity.User'
+      summary: トークン検証
       tags:
-      - user
+      - auth
+  /login:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: ログイン情報（IDとパスワード）
+        in: body
+        name: request
+        required: true
+        schema:
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: アクセストークン
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: ログイン
+      tags:
+      - auth
+  /signup:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: ユーザー情報
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/entity.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 作成されたユーザー情報
+          schema:
+            $ref: '#/definitions/entity.User'
+      summary: ユーザー登録
+      tags:
+      - auth
 swagger: "2.0"

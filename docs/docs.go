@@ -15,29 +15,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/v1/health": {
-            "get": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "healthcheck"
-                ],
-                "summary": "死活監視用",
-                "responses": {
-                    "200": {
-                        "description": "成功時のレスポンス",
-                        "schema": {
-                            "$ref": "#/definitions/system.Response"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/users": {
+        "/auth/users": {
             "get": {
                 "consumes": [
                     "application/json"
@@ -55,13 +33,86 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/user.ResponseUser"
+                                "$ref": "#/definitions/entity.User"
                             }
                         }
                     }
                 }
-            },
+            }
+        },
+        "/auth/users/": {
             "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "新規ユーザーを作成",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ユーザーID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "ユーザー情報",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entity.User"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "編集成功",
+                        "schema": {
+                            "$ref": "#/definitions/entity.User"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/users/{id}": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "ユーザーを取得",
+                "parameters": [
+                    {
+                        "description": "ユーザー情報",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entity.User"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "作成されたユーザー情報",
+                        "schema": {
+                            "$ref": "#/definitions/entity.User"
+                        }
+                    }
+                }
+            },
+            "put": {
                 "consumes": [
                     "application/json"
                 ],
@@ -74,40 +125,7 @@ const docTemplate = `{
                 "summary": "ユーザー情報を編集",
                 "parameters": [
                     {
-                        "description": "ユーザー情報",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/user.RequestUserParam"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "編集成功",
-                        "schema": {
-                            "$ref": "#/definitions/user.Response"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/users/{id}": {
-            "get": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "user"
-                ],
-                "summary": "ユーザーの詳細情報を取得",
-                "parameters": [
-                    {
-                        "type": "string",
+                        "type": "integer",
                         "description": "ユーザーID",
                         "name": "id",
                         "in": "path",
@@ -116,9 +134,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "ユーザー詳細",
+                        "description": "削除されたユーザーID",
                         "schema": {
-                            "$ref": "#/definitions/user.ResponseUser"
+                            "type": "integer"
                         }
                     }
                 }
@@ -147,7 +165,107 @@ const docTemplate = `{
                     "200": {
                         "description": "削除成功",
                         "schema": {
-                            "$ref": "#/definitions/user.Response"
+                            "$ref": "#/definitions/entity.User"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/validate": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "トークン検証",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer トークン",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "認証済みユーザー情報",
+                        "schema": {
+                            "$ref": "#/definitions/entity.User"
+                        }
+                    }
+                }
+            }
+        },
+        "/login": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "ログイン",
+                "parameters": [
+                    {
+                        "description": "ログイン情報（IDとパスワード）",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "アクセストークン",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/signup": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "ユーザー登録",
+                "parameters": [
+                    {
+                        "description": "ユーザー情報",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entity.User"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "作成されたユーザー情報",
+                        "schema": {
+                            "$ref": "#/definitions/entity.User"
                         }
                     }
                 }
@@ -155,62 +273,22 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "system.Response": {
+        "entity.User": {
             "type": "object",
             "properties": {
-                "message": {
-                    "description": "メッセージ（詳細説明）",
-                    "type": "string"
-                },
-                "status": {
-                    "description": "ステータス（成功、失敗など）",
-                    "type": "string"
-                }
-            }
-        },
-        "user.RequestUserParam": {
-            "type": "object",
-            "required": [
-                "email",
-                "name"
-            ],
-            "properties": {
-                "email": {
-                    "description": "メールアドレス（必須）",
-                    "type": "string"
-                },
-                "name": {
-                    "description": "ユーザー名（必須）",
-                    "type": "string"
-                }
-            }
-        },
-        "user.Response": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "description": "メッセージ（詳細説明）",
-                    "type": "string"
-                },
-                "status": {
-                    "description": "ステータス（成功、失敗など）",
-                    "type": "string"
-                }
-            }
-        },
-        "user.ResponseUser": {
-            "type": "object",
-            "properties": {
-                "email": {
-                    "description": "メールアドレス",
+                "created_at": {
                     "type": "string"
                 },
                 "id": {
-                    "description": "ユーザーID",
+                    "type": "integer"
+                },
+                "password": {
                     "type": "string"
                 },
-                "name": {
-                    "description": "ユーザー名",
+                "updated_at": {
+                    "type": "string"
+                },
+                "username": {
                     "type": "string"
                 }
             }
