@@ -49,6 +49,6 @@ func (ads AuthDomainService) GenerateToken(user *entity.User) (string, error) {
 	return ads.AuthServiceRepository.GenerateToken(user)
 }
 
-func (ads AuthDomainService) Validate(token string) (*entity.User, error) {
+func (ads AuthDomainService) Validate(token string) (int, error) {
 	return ads.AuthServiceRepository.Validate(token)
 }
