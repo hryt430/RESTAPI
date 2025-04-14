@@ -1,8 +1,9 @@
 package user
 
 import (
-	"errors"
+	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/hryt430/RESTAPI/api/internal/domain/entity"
@@ -24,56 +25,69 @@ func NewUserHandler(sqlHandler database.SqlHandler) *UserHandler {
 	}
 }
 
-type Response struct {
-	Status  string `json:"status"`  // ステータス（成功、失敗など）
-	Message string `json:"message"` // メッセージ（詳細説明）
-}
-
-type ResponseUser struct {
-	ID    string `json:"id"`    // ユーザーID
-	Name  string `json:"name"`  // ユーザー名
-	Email string `json:"email"` // メールアドレス
-}
-
-type RequestUserParam struct {
-	Name  string `json:"name" binding:"required"`  // ユーザー名（必須）
-	Email string `json:"email" binding:"required"` // メールアドレス（必須）
-}
-
 // GetUsers godoc
 // @Summary ユーザー一覧を取得
 // @Tags user
 // @Accept json
 // @Produce json
-// @Success 200 {object} []ResponseUser "ユーザー一覧"
-// @Router /v1/users [get]
+// @Success 200 {array} entity.User "ユーザー一覧"
+// @Router /auth/users [get]
 func (handler *UserHandler) GetUsers(ctx *gin.Context) {
 	users, err := handler.Interactor.FindUser()
 	if err != nil {
-		ctx.JSON(500, err)
+		ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	ctx.JSON(200, users)
+	ctx.JSON(http.StatusOK, users)
 
 }
 
 // GetUserById godoc
-// @Summary ユーザーの詳細情報を取得
+// @Summary ユーザーを取得
 // @Tags user
 // @Accept json
 // @Produce json
-// @Param id path string true "ユーザーID"
-// @Success 200 {object} ResponseUser "ユーザー詳細"
-// @Router /v1/users/{id} [get]
+// @Param request body entity.User true "ユーザー情報"
+// @Success 201 {object} entity.User "作成されたユーザー情報"
+// @Router /auth/users/{id} [get]
 func (handler *UserHandler) GetUserById(ctx *gin.Context) {
 	id, _ := strconv.Atoi(ctx.Param("id"))
 	user, err := handler.Interactor.FindUserById(id)
 	if err != nil {
-		ctx.JSON(500, err)
+		ctx.JSON(http.StatusNotFound, gin.H{"error": "Invalid user ID"})
 		return
 	}
-	ctx.JSON(200, user)
+	ctx.JSON(http.StatusOK, user)
 
+}
+
+// CreateUser godoc
+// @Summary 新規ユーザーを作成
+// @Tags user
+// @Accept json
+// @Produce json
+// @Param id path int true "ユーザーID"
+// @Param request body entity.User true "ユーザー情報"
+// @Success 200 {object} entity.User "編集成功"
+// @Router /auth/users/ [post]
+func (handler *UserHandler) CreateUser(ctx *gin.Context) {
+	var requestUser *entity.User
+	if err := ctx.ShouldBindJSON(&requestUser); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	now := time.Now()
+	requestUser.CreatedAt = now
+	requestUser.UpdatedAt = now
+
+	newUser, err := handler.Interactor.CreateUser(requestUser)
+	if err != nil {
+		ctx.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusCreated, newUser)
 }
 
 // EditUser godoc
@@ -81,24 +95,30 @@ func (handler *UserHandler) GetUserById(ctx *gin.Context) {
 // @Tags user
 // @Accept json
 // @Produce json
-// @Param request body RequestUserParam true "ユーザー情報"
-// @Success 200 {object} Response "編集成功"
-// @Router /v1/users [post]
+// @Param id path int true "ユーザーID"
+// @Success 200 {object} int "削除されたユーザーID"
+// @Router /auth/users/{id} [put]
 func (handler *UserHandler) EditUser(ctx *gin.Context) {
 	id, err := strconv.Atoi(ctx.Param("id"))
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+	}
 	var requestUser *entity.User
 	if err := ctx.ShouldBindJSON(&requestUser); err != nil {
-		ctx.JSON(400, err)
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	now := time.Now()
+	requestUser.UpdatedAt = now
 
 	user, err := handler.Interactor.EditUser(id, requestUser)
 	if err != nil {
-		ctx.JSON(500, err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	ctx.JSON(200, user)
+	ctx.JSON(http.StatusOK, user)
 }
 
 // DeleteUser godoc
@@ -107,43 +127,20 @@ func (handler *UserHandler) EditUser(ctx *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path string true "ユーザーID"
-// @Success 200 {object} user.Response "削除成功"
-// @Router /v1/users/{id} [delete]
+// @Success 200 {object} entity.User "削除成功"
+// @Router /auth/users/{id} [delete]
 func (handler *UserHandler) DeleteUser(ctx *gin.Context) {
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
-		ctx.JSON(400, errors.New("無効なIDフォーマットです"))
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
 		return
 	}
 
 	err = handler.Interactor.DeleteUser(id)
 	if err != nil {
-		ctx.JSON(500, err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	ctx.JSON(200, id)
-}
-
-// CreateUser godoc
-// @Summary 新規ユーザーを作成
-// @Tags user
-// @Accept json
-// @Produce json
-// @Param request body user.RequestUserParam true "ユーザー情報"
-// @Success 201 {object} user.ResponseUser "作成されたユーザー情報"
-func (handler *UserHandler) CreateUser(ctx *gin.Context) {
-	var requestUser *entity.User
-	if err := ctx.ShouldBindJSON(&requestUser); err != nil {
-		ctx.JSON(400, err)
-		return
-	}
-
-	newUser, err := handler.Interactor.CreateUser(requestUser)
-	if err != nil {
-		ctx.JSON(500, err)
-		return
-	}
-
-	ctx.JSON(201, newUser)
+	ctx.JSON(http.StatusOK, id)
 }
