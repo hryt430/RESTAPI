@@ -103,6 +103,18 @@ func (handler *UserHandler) EditUser(ctx *gin.Context) {
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
 	}
+
+	user_id, exists := ctx.Get("user")
+	if !exists {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "user not found"})
+		return
+	}
+
+	if id != user_id {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "permission denied"})
+		return
+	}
+
 	var requestUser *entity.User
 	if err := ctx.ShouldBindJSON(&requestUser); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -133,6 +145,17 @@ func (handler *UserHandler) DeleteUser(ctx *gin.Context) {
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	user_id, exists := ctx.Get("user")
+	if !exists {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "user not found"})
+		return
+	}
+
+	if id != user_id {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "permission denied"})
 		return
 	}
 

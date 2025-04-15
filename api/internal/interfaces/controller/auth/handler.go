@@ -70,9 +70,10 @@ func (ah *AuthHandler) Login(ctx *gin.Context) {
 
 	token, err := ah.Interactor.Login(request.ID, request.Password)
 	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials" + token})
 		return
 	}
+	ctx.Header("Authorization", "Bearer "+token)
 	ctx.JSON(http.StatusOK, gin.H{"token": token})
 }
 

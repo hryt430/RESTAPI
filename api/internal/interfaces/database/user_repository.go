@@ -33,7 +33,7 @@ func (repository *UserServiceRepository) FindUser() (users []*entity.User, err e
 }
 
 func (repository *UserServiceRepository) FindUserById(identifier int) (user *entity.User, err error) {
-	row, err := repository.Query("SELECT id, username FROM users WHERE id = ?", identifier)
+	row, err := repository.Query("SELECT id, username, password FROM users WHERE id = ?", identifier)
 	if err != nil {
 		return
 	}
@@ -42,13 +42,15 @@ func (repository *UserServiceRepository) FindUserById(identifier int) (user *ent
 	if row.Next() {
 		var id int
 		var username string
-		if err = row.Scan(&id, &username); err != nil {
+		var password string
+		if err = row.Scan(&id, &username, &password); err != nil {
 			return
 		}
 
 		user = &entity.User{
 			ID:       id,
 			Username: username,
+			Password: password,
 		}
 		return
 	}
