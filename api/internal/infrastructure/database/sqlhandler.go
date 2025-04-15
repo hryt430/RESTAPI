@@ -1,10 +1,11 @@
-package db
+package databaseInfra
 
 import (
 	"database/sql"
 
 	_ "github.com/go-sql-driver/mysql"
 
+	"github.com/hryt430/RESTAPI/api/internal/infrastructure/config"
 	"github.com/hryt430/RESTAPI/api/internal/interfaces/database"
 )
 
@@ -13,10 +14,17 @@ type SqlHandler struct {
 }
 
 func NewSqlHandler() database.SqlHandler {
-	conn, err := sql.Open("mysql", "root@tcp(localhost:3306)/GOAPI")
+	dsn := config.DB_DSN
+	conn, err := sql.Open("mysql", dsn)
 	if err != nil {
 		panic(err.Error())
 	}
+
+	// DB接続が確立できてるかを確認
+	if err := conn.Ping(); err != nil {
+		panic(err.Error())
+	}
+
 	sqlHandler := new(SqlHandler)
 	sqlHandler.Conn = conn
 	return sqlHandler

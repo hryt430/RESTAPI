@@ -1,4 +1,4 @@
-package jwt_auth
+package authInfra
 
 import (
 	"fmt"
@@ -17,37 +17,41 @@ func NewJwtAuthRepository(secretKey string) *JwtAuthRepository {
 }
 
 // JWTを生成する
-func (repo *JwtAuthRepository) GenerateToken(user *entity.User) (string, error) {
+func (repository *JwtAuthRepository) GenerateToken(user *entity.User) (string, error) {
+	now := time.Now()
 	claims := jwt.MapClaims{
 		"sub": user.ID,
-		"exp": time.Now().Add(time.Hour * 24).Unix(),
-		"iat": time.Now().Unix(),
+		"exp": now.Add(time.Hour * 24).Unix(),
+		"iat": now.Unix(), //発行時刻
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(repo.secretKey))
+	return token.SignedString([]byte(repository.secretKey))
 }
 
 // JWTを検証する
-func (repo *JwtAuthRepository) Validate(tokenString string) (*entity.User, error) {
+func (repository *JwtAuthRepository) Validate(tokenString string) (int, error) {
+	// 秘密鍵を知ることでjwt側が構文を解析してくれる
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		// Signing method should be expected
+		// 署名がHMAC方式であるかどうかを確かめる
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method")
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-		return []byte(repo.secretKey), nil
+		return []byte(repository.secretKey), nil
 	})
 
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
 
-	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		user := &entity.User{
-			ID: int(claims["sub"].(float64)),
+	// トークンが有効か（時間と署名の正しさ）
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid { //
+		sub, ok := claims["sub"].(float64)
+		if !ok {
+			return 0, fmt.Errorf("invalid subject in token")
 		}
-		return user, nil
+		return int(sub), nil
 	}
 
-	return nil, fmt.Errorf("invalid token")
+	return 0, fmt.Errorf("invalid token")
 }
