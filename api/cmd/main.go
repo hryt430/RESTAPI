@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 
-	"github.com/hryt430/RESTAPI/api/internal/presenter"
+	"github.com/hryt430/RESTAPI/api/internal/infrastructure/presenter"
 )
 
 // @title ユーザー管理API
