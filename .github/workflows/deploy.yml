@@ -6,7 +6,7 @@ on:
 
 env:
   AWS_REGION: ap-northeast-3
-  ECS_SERVICE: goapi-service
+  ECS_SERVICE: go-api-service
   ECS_TASK_DEFINITION: ./aws/task-definition-final.json
 
 permissions:
@@ -58,7 +58,7 @@ jobs:
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           task-definition: ${{ env.ECS_TASK_DEFINITION }}
-          container-name: dummy
+          container-name: go-api
           image: ${{ steps.build-image.outputs.image }}
 
       - name: Deploy Amazon ECS task definition
