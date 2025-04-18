@@ -6,7 +6,7 @@ on:
 
 env:
   AWS_REGION: ap-northeast-3
-  ECS_SERVICE: go-api-service
+  ECS_SERVICE: goapi-service
   ECS_TASK_DEFINITION: ./aws/task-definition-final.json
 
 permissions:
