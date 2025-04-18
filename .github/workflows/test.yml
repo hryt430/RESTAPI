@@ -1,0 +1,42 @@
+name: Test
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: ${{ env.MYSQL_ROOT_PASSWORD}}
+          MYSQL_DATABASE: ${{ env.MYSQL_DATABASE}}
+          MYSQL_USER: ${{ env.MYSQL_DATABASE}}
+          MYSQL_PASSWORD: ${{ env.MYSQL_PASSWORD}}
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.24'
+
+    - name: Install dependencies
+      run: go mod download
+
+    - name: Run tests
+      run: go test -v ./...
+      env:
+        DB_HOST: localhost
+        DB_PORT: 3306
+        DB_USER: ${{ env.MYSQL_DATABASE}}
+        DB_PASSWORD: ${{ env.MYSQL_PASSWORD}}
+        DB_NAME: ${{ env.MYSQL_DATABASE}}
