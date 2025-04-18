@@ -25,7 +25,7 @@ jobs:
       - name: Export secrets as env vars
         run: |
           echo "DB_HOST=${{ secrets.DB_HOST }}" >> $GITHUB_ENV
-          echo "executionRole:=${{ secrets.EXECUTION_ROLE }}" >> $GITHUB_ENV
+          echo "executionRole=${{ secrets.EXECUTION_ROLE }}" >> $GITHUB_ENV
 
 
       - name: Configure AWS credentials
@@ -34,6 +34,7 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
+
       - name: Substitute environment variables in task definition
         run: |
           envsubst < ./aws/task-definition.json > ./aws/task-definition-final.json
