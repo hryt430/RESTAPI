@@ -4,7 +4,7 @@
     "executionRoleArn": "${executionRole}",
     "containerDefinitions": [
       {
-        "name": "go-api",
+        "name": "dummy",
         "image": "<image>",
         "essential": true,
         "portMappings": [
