@@ -30,6 +30,10 @@
           {
             "name": "DB_USER",
             "value": "admin"
+          },
+          {
+            "name": "DB_PORT",
+            "value": "3306"
           }
         ],
         "secrets": [
