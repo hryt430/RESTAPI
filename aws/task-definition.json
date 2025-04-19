@@ -25,15 +25,11 @@
           },
           {
             "name": "DB_NAME",
-            "value": "go-api-db"
+            "value": "goapi_db"
           },
           {
             "name": "DB_USER",
             "value": "admin"
-          },
-          {
-            "name": "DB_PORT",
-            "value": "3306"
           }
         ],
         "secrets": [
