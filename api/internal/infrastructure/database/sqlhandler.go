@@ -3,6 +3,7 @@ package databaseInfra
 import (
 	"database/sql"
 	"fmt"
+	"os"
 
 	_ "github.com/go-sql-driver/mysql"
 
@@ -20,6 +21,7 @@ func NewSqlHandler() database.SqlHandler {
 	if err != nil {
 		panic(err.Error())
 	}
+	defer conn.Close()
 
 	// DB接続が確立できてるかを確認
 	if err := conn.Ping(); err != nil {
@@ -27,6 +29,15 @@ func NewSqlHandler() database.SqlHandler {
 	}
 
 	fmt.Println("✅ DB接続成功しました!")
+
+	sqlBytes, err := os.ReadFile("mysql/init.sql")
+	if err != nil {
+		fmt.Printf("❌ SQL読み取り失敗: %v", err)
+	}
+
+	if _, err := conn.Exec(string(sqlBytes)); err != nil {
+		fmt.Printf("❌ SQL実行失敗: %v", err)
+	}
 
 	sqlHandler := new(SqlHandler)
 	sqlHandler.Conn = conn
