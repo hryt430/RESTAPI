@@ -9,6 +9,7 @@ import (
 	databaseInfra "github.com/hryt430/RESTAPI/api/internal/infrastructure/database"
 	jwt "github.com/hryt430/RESTAPI/api/internal/infrastructure/middleware"
 	"github.com/hryt430/RESTAPI/api/internal/interfaces/controller/auth"
+	"github.com/hryt430/RESTAPI/api/internal/interfaces/controller/system"
 	"github.com/hryt430/RESTAPI/api/internal/interfaces/controller/user"
 )
 
@@ -21,6 +22,12 @@ func NewServer() *Server {
 
 func (s *Server) Run(ctx context.Context) error {
 	r := gin.Default()
+
+	// 死活監視用
+	{
+		systemHandler := system.NewSystemHandler()
+		r.GET("/health", systemHandler.Health)
+	}
 
 	key := config.JWT_SECRET
 	jwtRepo := jwt_auth.NewJwtAuthRepository(key)
