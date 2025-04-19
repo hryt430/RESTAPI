@@ -37,7 +37,15 @@
             "name": "DB_PASSWORD",
             "valueFrom": "arn:aws:ssm:ap-northeast-3:703671922895:parameter/api/db-password"
           }
-        ]
+        ],
+        "logConfiguration": {
+          "logDriver": "awslogs",
+          "options": {
+            "awslogs-group": "/ecs/go-api-task",
+            "awslogs-region": "ap-northeast-3",
+            "awslogs-stream-prefix": "ecs"
+          }
+        }
       }
     ],
     "requiresCompatibilities": [
