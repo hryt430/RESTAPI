@@ -2,6 +2,7 @@ package databaseInfra
 
 import (
 	"database/sql"
+	"fmt"
 
 	_ "github.com/go-sql-driver/mysql"
 
@@ -24,6 +25,8 @@ func NewSqlHandler() database.SqlHandler {
 	if err := conn.Ping(); err != nil {
 		panic(err.Error())
 	}
+
+	fmt.Println("✅ DB接続成功しました!")
 
 	sqlHandler := new(SqlHandler)
 	sqlHandler.Conn = conn
