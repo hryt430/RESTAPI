@@ -17,7 +17,7 @@
         "environment": [
           {
             "name": "DB_HOST",
-            "value": "${DB_HOST}"
+            "value": "goapi-db.cjsgea08g79o.ap-northeast-3.rds.amazonaws.com"
           },
           {
             "name": "DB_PORT",
