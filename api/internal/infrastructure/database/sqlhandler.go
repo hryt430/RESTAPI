@@ -14,7 +14,7 @@ type SqlHandler struct {
 }
 
 func NewSqlHandler() database.SqlHandler {
-	dsn := config.DB_DSN
+	dsn := config.GetDSN()
 	conn, err := sql.Open("mysql", dsn)
 	if err != nil {
 		panic(err.Error())
