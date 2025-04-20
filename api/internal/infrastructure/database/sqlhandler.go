@@ -21,7 +21,6 @@ func NewSqlHandler() database.SqlHandler {
 	if err != nil {
 		panic(err.Error())
 	}
-	defer conn.Close()
 
 	// DB接続が確立できてるかを確認
 	if err := conn.Ping(); err != nil {
@@ -34,7 +33,6 @@ func NewSqlHandler() database.SqlHandler {
 	if err != nil {
 		fmt.Printf("❌ SQL読み取り失敗: %v", err)
 	}
-	conn.Exec("DROP TABLE IF EXISTS users;")
 	if _, err := conn.Exec(string(sqlBytes)); err != nil {
 		fmt.Printf("❌ SQL実行失敗: %v", err)
 	}
@@ -62,6 +60,10 @@ func (handler *SqlHandler) Query(statement string, args ...interface{}) (databas
 	row := new(SqlRow)
 	row.Rows = rows
 	return row, nil
+}
+
+func (h *SqlHandler) Close() error {
+	return h.Conn.Close()
 }
 
 type SqlResult struct {
