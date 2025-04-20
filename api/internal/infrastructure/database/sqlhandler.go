@@ -62,8 +62,8 @@ func (handler *SqlHandler) Query(statement string, args ...interface{}) (databas
 	return row, nil
 }
 
-func (h *SqlHandler) Close() error {
-	return h.Conn.Close()
+func (handler *SqlHandler) Close() error {
+	return handler.Conn.Close()
 }
 
 type SqlResult struct {
