@@ -33,7 +33,7 @@ func init() {
 	PORT = os.Getenv("PORT")
 }
 
-// DB接続文字列を返す
+// product用のDB接続文字列を返す
 func GetDSN() string {
 	return fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true", DBUser, DBPassword, DBHost, DBPort, DBName)
 }

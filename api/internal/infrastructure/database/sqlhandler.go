@@ -33,6 +33,7 @@ func NewSqlHandler() database.SqlHandler {
 	if err != nil {
 		fmt.Printf("❌ SQL読み取り失敗: %v", err)
 	}
+
 	if _, err := conn.Exec(string(sqlBytes)); err != nil {
 		fmt.Printf("❌ SQL実行失敗: %v", err)
 	}
@@ -62,8 +63,8 @@ func (handler *SqlHandler) Query(statement string, args ...interface{}) (databas
 	return row, nil
 }
 
-func (h *SqlHandler) Close() error {
-	return h.Conn.Close()
+func (handler *SqlHandler) Close() error {
+	return handler.Conn.Close()
 }
 
 type SqlResult struct {
