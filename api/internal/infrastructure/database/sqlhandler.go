@@ -33,6 +33,7 @@ func NewSqlHandler() database.SqlHandler {
 	if err != nil {
 		fmt.Printf("❌ SQL読み取り失敗: %v", err)
 	}
+
 	if _, err := conn.Exec(string(sqlBytes)); err != nil {
 		fmt.Printf("❌ SQL実行失敗: %v", err)
 	}
