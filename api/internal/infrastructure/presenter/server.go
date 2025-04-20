@@ -31,8 +31,10 @@ func (s *Server) Run(ctx context.Context) error {
 
 	key := config.JWT_SECRET
 	jwtRepo := jwt_auth.NewJwtAuthRepository(key)
-	userController := user.NewUserHandler(databaseInfra.NewSqlHandler())
-	authController := auth.NewAuthHandler(databaseInfra.NewSqlHandler(), jwtRepo)
+	dbi := databaseInfra.NewSqlHandler()
+	defer dbi.Close()
+	userController := user.NewUserHandler(dbi)
+	authController := auth.NewAuthHandler(dbi, jwtRepo)
 
 	r.POST("/signup", authController.SignUp)
 	r.POST("/login", authController.Login)
